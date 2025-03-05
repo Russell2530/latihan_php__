@@ -14,26 +14,66 @@
     $uts = "";
     $uas = "";
 
-    if (isset($_POST["hitung"])) {
-        $nama = $_POST["nama"];
-        $tugas = $_POST["nilai"];
-        $uts = $_POST["uts"];
-        $uas = $_POST["uas"];
+     // isset() memeriksa apakah variabel ada dan tidak bernilai null.
+    //         mengambilkan true jika variabel ada dan tidak null.
+    
+    // !isset() memerikasa apakah variabel tidak ada atau bernilai null.
+    //          mengambilkan true jika variabel tidak ada atau null.
+    
+    // session : digunakan untuk menyimpan data sementara yang dapat diakses oleh pengguna selama periode tertentu 
+    
+    // inisialisasi sesi untik menyimpan data siswa
+    session_start();
 
-        $nilai = ((30 / 100) * $uts) + ((40 / 100) * $uas) + ((30 / 100) * $tugas);
+    // memeriksa apakah $_SESSION['data_siswa'] sudah ada atau belum
+    if (!isset($_SESSION["siswaList"])) { // true
+        $_SESSION["siswaList"] = []; // jika kondisi true maka akan dibuatkan array kosong
+    }
 
-        if ($nilai >= 85) {
-            $status = "A";
-        } elseif ($nilai >= 70) {
-            $status = "B";
-        } elseif ($nilai >= 60) {
-            $status = "C";
-        } elseif ($nilai >= 50) {
-            $status = "D";
-        } else {
-            $status = "E";
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        // cara apakah inputan form ada atau tidak kosong
+        if (isset($_POST['nama']) && isset($_POST['nilai']) && isset($_POST['uts']) && isset($_POST['uas'])) {
+
+            // ambil data dari form
+            $nama = $_POST["nama"];
+            $tugas = $_POST["nilai"];
+            $uts = $_POST["uts"];
+            $uas = $_POST["uas"];
+
+            // hitung nilai akhir
+            $nilai = ((30 / 100) * $uts) + ((40 / 100) * $uas) + ((30 / 100) * $tugas);
+
+            // kategori nilai
+            if ($nilai >= 85) {
+                $status = "A";
+            } elseif ($nilai >= 70) {
+                $status = "B";
+            } elseif ($nilai >= 60) {
+                $status = "C";
+            } elseif ($nilai >= 50) {
+                $status = "D";
+            } else {
+                $status = "E";
+            }
+
+            // simpan data siswa ke dalam session
+            $_SESSION['siswaList'][] = [
+                'nama' => $nama,
+                'nilai' => $tugas,
+                'kategori' => $status,
+            ];
         }
     }
+
+    //  cek jika tombol hapus data di klik, maka sesi akan dihancurkan
+    if (isset($_POST['hapus_data'])) {
+
+    session_destroy(); // menghapus semua data yang ada di sesi
+
+    session_start();
+    $_SESSION['siswaList'] = [];
+    }
+
     ?>
 
     <div class="bg-white p-8 rounded-lg shadow-lg w-150 m-10">
@@ -64,27 +104,28 @@
                 <thead>
                     <tr class="bg-black text-white">
                         <th class="border border-gray-300 p-3 ...">Nama</th>
-                        <th class="border border-gray-300 p-3...">Nilai Tugas</th>
+                        <!-- <th class="border border-gray-300 p-3...">Nilai Tugas</th>
                         <th class="border border-gray-300 p-3...">Nilai UTS</th>
-                        <th class="border border-gray-300 p-3...">Nilai UAS</th>
+                        <th class="border border-gray-300 p-3...">Nilai UAS</th> -->
                         <th class="border border-gray-300 p-3...">Nilai Akhir</th>
                         <th class="border border-gray-300 p-3...">kategori</th>
                     </tr>
                 </thead>
                 <tbody>
+                    <?php foreach ($_SESSION['siswaList'] as $list) : ?>
                     <tr>
-                        <td class="border border-gray-300 text-center"><?php echo $nama ?></td>
-                        <td class="border border-gray-300 text-center"><?php echo $tugas ?></td>
-                        <td class="border border-gray-300 text-center"><?php echo $uts ?></td>
-                        <td class="border border-gray-300 text-center"><?php echo $uas ?></td>
-                        <td class="border border-gray-300 text-center"><?php echo $nilai ?></td>
-                        <td class="border border-gray-300 text-center"><?php echo $status ?></td>
+                        <td class="border border-gray-300 text-center"><?php echo ($list['nama']) ?></td>
+                        <td class="border border-gray-300 text-center"><?php echo ($list['nilai']) ?></td>
+                        <td class="border border-gray-300 text-center"><?php echo ($list['kategori']) ?></td>
                     </tr>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
-        <input type="submit" name="hitung" value="Hapus Semua Data"
-            class="w-135 p-3 mb-4 bg-red-500 rounded-md text-white hover:bg-red-700 cursor-pointer mx-8 mt-5">
+        <form method="POST">
+            <button type="submit" name="hapus_data" 
+            class="w-135 p-3 mb-4 bg-red-500 rounded-md text-white hover:bg-red-700 cursor-pointer mx-8 mt-5"> Hapus Semua Data </button>
+        </form>
     </div>
 
 </body>
